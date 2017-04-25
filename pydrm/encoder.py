@@ -15,9 +15,9 @@ from .drm_mode_h import DrmModeEncoderC, DRM_MODE_OBJECT_ENCODER, drm_encoder_ty
 
 
 class DrmEncoder(DrmObject):
-    def __init__(self, drm, id_):
+    def __init__(self, drm, id):
         self._drm = drm
-        self.id = id_
+        self.id = int(id)
         self.fetch()
         self._crtc = None # for inspect()
 
@@ -31,8 +31,8 @@ class DrmEncoder(DrmObject):
         self.type = arg.encoder_type
 
         self.crtc_id = arg.crtc_id
-        self.possible_crtcs = arg.possible_crtcs
-        self.possible_clones = arg.possible_clones
+        self._possible_crtcs = arg.possible_crtcs
+        self._possible_clones = arg.possible_clones
 
         self.type_name = drm_encoder_type_name(self.type)
 
@@ -45,3 +45,10 @@ class DrmEncoder(DrmObject):
         else:
             return None
 
+    @property
+    def possible_crtcs(self):
+        return [crtc for i, crtc in enumerate(self._drm.crtcs) if (self._possible_crtcs >> i) & 1]
+
+    @property
+    def possible_clones(self):
+        return [encoder for i, encoder in enumerate(self._drm.encoders) if (self._possible_clones >> i) & 1]

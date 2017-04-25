@@ -26,9 +26,9 @@ from .drm_mode_h import DrmModeGetConnectorC, DrmModeModeinfoC, drm_connector_ty
 #                ("subpixel", c_uint32),
 
 class DrmConnector(DrmObject):
-    def __init__(self, drm, id_):
+    def __init__(self, drm, id):
         self._drm = drm
-        self.id = id_
+        self.id = int(id)
         self._encoders = []
         self.fetch()
 

@@ -24,9 +24,9 @@ from .format import DrmFormat
 
 
 class DrmPlane(DrmObject):
-    def __init__(self, drm, id_):
+    def __init__(self, drm, id):
         self._drm = drm
-        self.id = int(id_)
+        self.id = int(id)
         self.fetch()
 
     def fetch(self):
@@ -52,7 +52,7 @@ class DrmPlane(DrmObject):
         else:
             self.fb = None
 
-        self.possible_crtcs = arg.possible_crtcs
+        self._possible_crtcs = arg.possible_crtcs
         self.gamma_size = int(arg.gamma_size)
 
         self.formats = []
@@ -78,6 +78,10 @@ class DrmPlane(DrmObject):
                     break
         if self.preferred_format is None:
             self.preferred_format = self.formats[0]
+
+    @property
+    def possible_crtcs(self):
+        return [crtc for i, crtc in enumerate(self._drm.crtcs) if (self._possible_crtcs >> i) & 1]
 
 
     @classmethod

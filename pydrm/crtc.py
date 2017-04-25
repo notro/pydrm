@@ -18,9 +18,9 @@ from .drm_mode_h import DrmModeCrtcC, DRM_MODE_OBJECT_CRTC
 
 
 class DrmCrtc(DrmObject):
-    def __init__(self, drm, id_):
+    def __init__(self, drm, id):
         self._drm = drm
-        self.id = id_
+        self.id = int(id)
         self.fetch()
         self.get_props(DRM_MODE_OBJECT_CRTC)
 

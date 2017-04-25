@@ -181,12 +181,12 @@ def dump_encoders(drm):
     s = "Encoders:\n"
     s += "id\tcrtc\ttype\tpossible crtcs\tpossible clones\n"
     for encoder in drm.encoders:
-        s += "%d\t%d\t%s\t0x%08x\t0x%08x\n" % (
+        s += "%d\t%d\t%s\t%-15s\t%-15s\n" % (
                encoder.id,
                encoder.crtc.id if encoder.crtc else 0,
                encoder.type_name,
-               encoder.possible_crtcs,
-               encoder.possible_clones)
+               ', '.join([str(crtc.id) for crtc in encoder.possible_crtcs]),
+               ', '.join([str(encoder.id) for encoder in encoder.possible_clones]))
     return s
 
 def dump_connectors(drm):
@@ -235,14 +235,15 @@ def dump_planes(drm):
     s += "id\tcrtc\tfb\tCRTC x,y\tx,y\tgamma size\tpossible crtcs\n"
 
     for plane in drm.planes:
-        s += "%d\t%d\t%d\t%d,%d\t\t%d,%d\t%-8d\t0x%08x\n" % (
+        s += "%d\t%d\t%d\t%d,%d\t\t%d,%d\t%-8d\t%s\n" % (
                plane.id,
                plane.crtc.id if plane.crtc else 0,
                plane.fb.id if plane.fb else 0,
 # FIXME: what are these?
 #               plane.crtc_x, plane.crtc_y, plane.x, plane.y,
                999, 999, 999, 999,
-               plane.gamma_size, plane.possible_crtcs)
+               plane.gamma_size,
+               ', '.join([str(crtc.id) for crtc in plane.possible_crtcs]))
 
         if not plane.formats:
             continue

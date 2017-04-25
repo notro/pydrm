@@ -10,7 +10,7 @@ from .drm_mode_h import DRM_MODE_PROP_PENDING, DRM_MODE_PROP_RANGE, DRM_MODE_PRO
 class DrmProperty(DrmObject):
     def __init__(self, drm, id, obj_id, obj_type):
         self._drm = drm
-        self.id = id
+        self.id = int(id)
         self.obj_id = obj_id
         self.obj_type = obj_type
         self.fetch()

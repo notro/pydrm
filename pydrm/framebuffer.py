@@ -17,9 +17,9 @@ from .buffer import DrmDumbBuffer
 
 
 class DrmFramebuffer(DrmObject):
-    def __init__(self, drm, id_):
+    def __init__(self, drm, id):
         self._drm = drm
-        self.id = id_
+        self.id = int(id)
 
         self.fetch()
 

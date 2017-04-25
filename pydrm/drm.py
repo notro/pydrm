@@ -190,25 +190,16 @@ class Drm(object):
         self._crtcs.append(crtc)
         return crtc
 
-    def find_crtcs(self, *conns):
-        possible_crtcs = ~0
-        active_crtcs = 0
-        for conn in conns:
-            crtcs_for_connector = 0
-            for encoder in conn.encoders:
-                crtcs_for_connector |= encoder.possible_crtcs;
+    def find_crtcs(self, *connectors):
+        possible_crtcs = set(self.crtcs)
+        active_crtcs = set()
+        for connector in connectors:
+            for encoder in connector.encoders:
+                possible_crtcs &= set(encoder.possible_crtcs)
                 if encoder.crtc:
-                    active_crtcs |= 1 << self.crtcs.index(encoder.crtc)
+                    active_crtcs.add(enc.crtc)
 
-            possible_crtcs &= crtcs_for_connector
-
-        if not possible_crtcs:
-            return []
-
-        # put the active ones first
-        crtcs = [self.crtcs[i] for i in range(32) if ((possible_crtcs & active_crtcs) >> i) & 1]
-        crtcs += [self.crtcs[i] for i in range(32) if ((possible_crtcs & ~active_crtcs) >> i) & 1]
-        return  crtcs
+        return list(active_crtcs) + list(possible_crtcs - active_crtcs)
 
     @property
     def framebuffers(self):
@@ -235,11 +226,7 @@ class Drm(object):
         return plane
 
     def find_planes(self, *crtcs):
-        possible_crtcs = 0
-        for crtc in crtcs:
-            possible_crtcs |= (1 << self.crtcs.index(crtc))
-
-        return [plane for plane in self.planes if plane.possible_crtcs & possible_crtcs]
+        return [plane for plane in self.planes if set(plane.possible_crtcs) & set(crtcs)]
 
     def __repr__(self):
         return "Drm(%s)" % self.minor
