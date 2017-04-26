@@ -68,11 +68,11 @@ def main(argv):
 def demo(drm, start):
     """simple partial update demo - draw random shapes"""
 
-#    # initially set all white background
-#    image = Image.new('1', epd.size, WHITE)
+    # Use a monochrome image to force 0/1 values
+    image = Image.new('1', drm.image.size)
 
     # prepare for drawing
-    draw = drm.draw
+    draw = ImageDraw.Draw(image)
     width, height = drm.image.size
 
     font = ImageFont.truetype(FONT_FILE, FONT_SIZE)
@@ -85,6 +85,8 @@ def demo(drm, start):
         counter = (counter + 1) & 0xffff
 
         # display image on the panel
+        image.convert('RGBX')
+        drm.image.paste(image)
         drm.flush()
 
 # main

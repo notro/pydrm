@@ -117,8 +117,11 @@ def main(argv):
 def demo(drm, settings):
     """draw a clock"""
 
+    # Use a monochrome image to force 0/1 values
+    image = Image.new('1', drm.image.size)
+
     # prepare for drawing
-    draw = drm.draw
+    draw = ImageDraw.Draw(image)
     width, height = drm.image.size
 
     clock_font = ImageFont.truetype(FONT_FILE, settings.CLOCK_FONT_SIZE)
@@ -157,6 +160,8 @@ def demo(drm, settings):
 
         # display image on the panel
         drm.enable()
+        image.convert('RGBX')
+        drm.image.paste(image)
         drm.flush()
         drm.disable()
 
