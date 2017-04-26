@@ -40,10 +40,10 @@ class DrmCapabilities(object):
         self._caps['DRM_CAP_PAGE_FLIP_TARGET'] = DRM_CAP_PAGE_FLIP_TARGET
 
     def get(self, capability):
-        res = DrmGetCapC()
-        res.capability = capability
-        fcntl.ioctl(self._drm.fd, DRM_IOCTL_GET_CAP, res)
-        return int(res.value)
+        arg = DrmGetCapC()
+        arg.capability = capability
+        fcntl.ioctl(self._drm.fd, DRM_IOCTL_GET_CAP, arg)
+        return int(arg.value)
 
     def __getattr__(self, attr):
         if attr in self._caps.keys():
@@ -197,7 +197,7 @@ class Drm(object):
             for encoder in connector.encoders:
                 possible_crtcs &= set(encoder.possible_crtcs)
                 if encoder.crtc:
-                    active_crtcs.add(enc.crtc)
+                    active_crtcs.add(encoder.crtc)
 
         return list(active_crtcs) + list(possible_crtcs - active_crtcs)
 

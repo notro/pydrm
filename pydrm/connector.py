@@ -62,7 +62,7 @@ class DrmConnector(DrmObject):
             self._encoders.append(self._drm.get_encoder(encoder_ids[i]))
 
         if (arg.encoder_id):
-            self.encoder = self._drm.get_encoder(res.encoder_id)
+            self.encoder = self._drm.get_encoder(arg.encoder_id)
         else:
             self.encoder = None
 
