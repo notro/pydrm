@@ -96,7 +96,7 @@ def main(argv):
     """main program - draw HH:MM clock on 2.70" size panel"""
 
     global settings
-    drm = SimpleDrm(format='XR24')
+    drm = SimpleDrm()
 
 #    print('panel = {p:s} {w:d} x {h:d}  version={v:s} COG={g:d} FILM={f:d}'.format(p=epd.panel, w=epd.width, h=epd.height, v=epd.version, g=epd.cog, f=epd.film))
     print(drm.inspect(True))

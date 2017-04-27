@@ -55,7 +55,7 @@ def main(argv):
         sys.exit('object count is out of range [0..0x{m:04x}: 0x{s:04x}'.format(m=MAX_START, s=start))
 
 
-    drm = SimpleDrm(format='XR24')
+    drm = SimpleDrm()
 
 #    print('panel = {p:s} {w:d} x {h:d}  version={v:s} COG={g:d} FILM={f:d}'.format(p=epd.panel, w=epd.width, h=epd.height, v=epd.version, g=epd.cog, f=epd.film))
     print(drm.inspect())
