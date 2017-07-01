@@ -7,9 +7,10 @@
 #  Copyright 2008 Intel Corporation
 #    Jesse Barnes <jesse.barnes@intel.com>
 
-import sys
+import os, sys
 import argparse
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))) # use pydrm from parent dir
 from pydrm import Drm
 from pydrm.property import DrmPropertyEnum
 from pydrm.format import DrmFormat
