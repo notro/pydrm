@@ -40,7 +40,7 @@ class DrmProperty(DrmObject):
         prop_ids = (ctypes.c_uint32*arg.count_props)()
         arg.props_ptr = ctypes.cast(ctypes.pointer(prop_ids), ctypes.c_void_p).value
 
-        prop_values = (ctypes.c_uint32*arg.count_props)()
+        prop_values = (ctypes.c_uint64*arg.count_props)()
         arg.prop_values_ptr = ctypes.cast(ctypes.pointer(prop_values), ctypes.c_void_p).value
 
         fcntl.ioctl(self._drm.fd, DRM_IOCTL_MODE_OBJ_GETPROPERTIES, arg)
@@ -149,10 +149,14 @@ class DrmProperties(DrmObject):
 
         fcntl.ioctl(self._drm.fd, DRM_IOCTL_MODE_OBJ_GETPROPERTIES, arg)
 
+        if arg.count_props == 0:
+            #print("DrmProperties(%d, 0x%x): arg.count_props=%d" % (self.id, self.type, arg.count_props))
+            return
+
         prop_ids = (ctypes.c_uint32*arg.count_props)()
         arg.props_ptr = ctypes.cast(ctypes.pointer(prop_ids), ctypes.c_void_p).value
 
-        prop_values = (ctypes.c_uint32*arg.count_props)()
+        prop_values = (ctypes.c_uint64*arg.count_props)()
         arg.prop_values_ptr = ctypes.cast(ctypes.pointer(prop_values), ctypes.c_void_p).value
 
         fcntl.ioctl(self._drm.fd, DRM_IOCTL_MODE_OBJ_GETPROPERTIES, arg)
