@@ -8,11 +8,12 @@ from .drm_mode_h import DRM_MODE_PROP_PENDING, DRM_MODE_PROP_RANGE, DRM_MODE_PRO
 
 
 class DrmProperty(DrmObject):
-    def __init__(self, drm, id, obj_id, obj_type):
+    def __init__(self, drm, id, obj_id, obj_type, arg=None):
         self._drm = drm
         self.id = int(id)
         self.obj_id = obj_id
         self.obj_type = obj_type
+        self._arg = arg
         self.fetch()
 
     @property
@@ -94,13 +95,28 @@ class DrmPropertyEnum(DrmProperty):
 class DrmPropertyBitmask(DrmProperty):
     def fetch(self):
         self.type_name = "bitmask"
-        raise NotImplementedError
+        self.name = self._arg.name
+        #raise NotImplementedError
+
+    def get(self):
+        return 0
+
+    def set(self):
+        pass
 
 
 class DrmPropertyBlob(DrmProperty):
     def fetch(self):
         self.type_name = "blob"
-        raise NotImplementedError
+        self.name = self._arg.name
+        #raise NotImplementedError
+
+    def get(self):
+        return 0
+
+    def set(self):
+        pass
+
 
 #    if (prop->flags & DRM_MODE_PROP_PENDING)
 #        printf(" pending");
@@ -154,13 +170,13 @@ class DrmProperties(DrmObject):
                 if propc.flags & DRM_MODE_PROP_ENUM:
                     prop = DrmPropertyEnum(self._drm, propid, self.id, self.type)
                 elif propc.flags & DRM_MODE_PROP_BITMASK:
-                    prop = DrmPropertyBitmask(self._drm, propid, self.id, self.type)
-                elif propc.flags & DRM_MODE_PROP_BLOB:
-                    prop = DrmPropertyBlob(self._drm, propid, self.id, self.type)
+                    prop = DrmPropertyBitmask(self._drm, propid, self.id, self.type, propc)
                 else:
-                    raise ValueError("count_enum_blobs")
+                    raise ValueError("count_enum_blobs: propc.flags=0x%x" % propc.flags)
+            elif propc.flags & DRM_MODE_PROP_BLOB:
+                prop = DrmPropertyBlob(self._drm, propid, self.id, self.type, propc)
             else:
-                raise ValueError("not count_enum_blobs")
+                raise ValueError("not count_enum_blobs: propc.flags=0x%x" % propc.flags)
 
             self.props.append(prop)
 
