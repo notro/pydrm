@@ -1,3 +1,4 @@
+import os
 from ctypes import *
 from .drm_mode_h import *
 
@@ -750,7 +751,9 @@ class DrmSetClientCapC(Structure):
                 ("value", c_uint64)]
 
 ##define DRM_RDWR O_RDWR
+DRM_RDWR = os.O_RDWR
 ##define DRM_CLOEXEC O_CLOEXEC
+DRM_CLOEXEC = getattr(os, 'O_CLOEXEC', 0o2000000)
 #struct drm_prime_handle {
 #    __u32 handle;
 #
@@ -760,7 +763,14 @@ class DrmSetClientCapC(Structure):
 #    /** Returned dmabuf file descriptor */
 #    __s32 fd;
 #};
-#
+
+class DrmPrimeHandleC(Structure):
+    _fields_ = [
+                ("handle", c_uint32),
+                ("flags", c_uint32),
+                ("fd", c_int32),
+               ]
+
 ##if defined(__cplusplus)
 #}
 ##endif
@@ -842,8 +852,11 @@ DRM_IOCTL_SET_CLIENT_CAP                 = DRM_IOW(0x0d, DrmSetClientCapC)
 ##define DRM_IOCTL_FINISH        DRM_IOW( 0x2c, struct drm_lock)
 #
 ##define DRM_IOCTL_PRIME_HANDLE_TO_FD    DRM_IOWR(0x2d, struct drm_prime_handle)
+DRM_IOCTL_PRIME_HANDLE_TO_FD =             DRM_IOWR(0x2d, DrmPrimeHandleC)
+
 ##define DRM_IOCTL_PRIME_FD_TO_HANDLE    DRM_IOWR(0x2e, struct drm_prime_handle)
-#
+DRM_IOCTL_PRIME_FD_TO_HANDLE =             DRM_IOWR(0x2e, DrmPrimeHandleC)
+
 ##define DRM_IOCTL_AGP_ACQUIRE       DRM_IO(  0x30)
 ##define DRM_IOCTL_AGP_RELEASE       DRM_IO(  0x31)
 ##define DRM_IOCTL_AGP_ENABLE        DRM_IOW( 0x32, struct drm_agp_mode)

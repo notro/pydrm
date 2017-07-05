@@ -7,21 +7,22 @@ from .drm_mode_h import DrmModeFbCmdC, DRM_MODE_OBJECT_FB, DrmModeFbCmd2C, DrmMo
 from .buffer import DrmDumbBuffer
 
 
-#                ("fb_id", c_uint32),
-#                ("width", c_uint32),
-#                ("height", c_uint32),
-#                ("pitch", c_uint32),
-#                ("bpp", c_uint32),
-#                ("depth", c_uint32),
-#                ("handle", c_uint32),
-
-
 class DrmFramebuffer(DrmObject):
-    def __init__(self, drm, id):
-        self._drm = drm
-        self.id = int(id)
-
-        self.fetch()
+    def __init__(self, bo=None):
+        if bo:
+            self._drm = bo._drm
+            self.format = bo.format
+            self.width = bo.width
+            self.height = bo.height
+            self.bo = bo
+            self._create()
+        else:
+            self._drm = None
+            self.id = None
+            self.format = None
+            self.width = None
+            self.height = None
+            self.bo = None
 
     def fetch(self):
         arg = DrmModeFbCmdC()
@@ -38,46 +39,6 @@ class DrmFramebuffer(DrmObject):
         self.handle = int(arg.handle)
 
         self.get_props(DRM_MODE_OBJECT_FB)
-
-#                ("fb_id", c_uint32),
-#                ("flags", c_uint32),
-#                ("color", c_uint32),
-#                ("num_clips", c_uint32),
-#                ("clips_ptr", c_uint64),
-
-    def flush(self, x1=None, y1=None, x2=None, y2=None):
-        if x1 is not None and y1 is None:
-            raise TypeError("flush expected zero or 4 arguments")
-
-        arg = DrmModeFbDirtyCmdC()
-        arg.fb_id = self.id
-
-        if x1 is not None:
-            clip = DrmClipRectC(x1=x1, y1=y1, x2=x2, y2=y2)
-            arg.clips_ptr = ctypes.cast(ctypes.pointer(clip), ctypes.c_void_p).value
-            arg.num_clips = 1
-
-        fcntl.ioctl(self._drm.fd, DRM_IOCTL_MODE_DIRTYFB, arg)
-
-#                ("fb_id", c_uint32),
-#                ("width", c_uint32),
-#                ("height", c_uint32),
-#                ("pixel_format", c_uint32),
-#                ("flags", c_uint32),
-#
-#                ("handles", c_uint32 * 4),
-#                ("pitches", c_uint32 * 4),
-#                ("offsets", c_uint32 * 4),
-#                ("modifier", c_uint32 * 4),
-
-class DrmDumbFramebuffer(DrmFramebuffer):
-    def __init__(self, drm, format_, width, height):
-        self._drm = drm
-        self.format = format_
-        self.width = width
-        self.height = height
-        self.bo = DrmDumbBuffer(self._drm, self.format, self.width, self.height)
-        self._create()
 
     def _create(self):
         arg = DrmModeFbCmd2C()
@@ -99,3 +60,30 @@ class DrmDumbFramebuffer(DrmFramebuffer):
         fcntl.ioctl(self._drm.fd, DRM_IOCTL_MODE_RMFB, ctypes.c_uint(self.id))
         self._drm._framebuffers.remove(self)
 
+    def flush(self, x1=None, y1=None, x2=None, y2=None):
+        if x1 is not None and y1 is None:
+            raise TypeError("flush expected zero or 4 arguments")
+
+        arg = DrmModeFbDirtyCmdC()
+        arg.fb_id = self.id
+
+        if x1 is not None:
+            clip = DrmClipRectC(x1=x1, y1=y1, x2=x2, y2=y2)
+            arg.clips_ptr = ctypes.cast(ctypes.pointer(clip), ctypes.c_void_p).value
+            arg.num_clips = 1
+
+        fcntl.ioctl(self._drm.fd, DRM_IOCTL_MODE_DIRTYFB, arg)
+
+    @classmethod
+    def from_id(cls, drm, id):
+        self = cls()
+        self._drm = drm
+        self.id = int(id)
+        self.fetch()
+        return self
+
+
+class DrmDumbFramebuffer(DrmFramebuffer):
+    def __init__(self, drm, format_, width, height):
+        bo = DrmDumbBuffer(drm, format_, width, height)
+        super(DrmDumbFramebuffer, self).__init__(bo)

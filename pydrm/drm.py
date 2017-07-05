@@ -124,7 +124,13 @@ class Drm(object):
         arg.encoder_id_ptr = cast(pointer(encoder_ids), c_void_p).value
         arg.count_encoders = 128
 
-        fcntl.ioctl(fd, DRM_IOCTL_MODE_GETRESOURCES, arg)
+        try:
+            fcntl.ioctl(fd, DRM_IOCTL_MODE_GETRESOURCES, arg)
+        except IOError as e:
+            if e.errno == 22: # EINVAL: no DRIVER_MODESET (VGEM)
+                return
+            else:
+                raise
 
         for i in range(arg.count_fbs):
             self.get_framebuffer(fb_ids[i])
@@ -138,7 +144,7 @@ class Drm(object):
         for i in range(arg.count_crtcs):
             self.get_crtc(crtc_ids[i])
 
-        self._planes = DrmPlane.get_planes(self)
+        DrmPlane.get_planes(self)
 
 
     @property
@@ -209,7 +215,7 @@ class Drm(object):
         for fb in self._framebuffers:
             if fb.id == id_:
                 return fb
-        fb = DrmFramebuffer(self, id_)
+        fb = DrmFramebuffer.from_id(self, id_)
         self._framebuffers.append(fb)
         return fb
 
