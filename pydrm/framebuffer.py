@@ -9,6 +9,7 @@ from .buffer import DrmDumbBuffer
 
 class DrmFramebuffer(DrmObject):
     def __init__(self, bo=None):
+        self.try_flush = True
         if bo:
             self._drm = bo._drm
             self.format = bo.format
@@ -64,6 +65,9 @@ class DrmFramebuffer(DrmObject):
         if x1 is not None and y1 is None:
             raise TypeError("flush expected zero or 4 arguments")
 
+        if not self.try_flush:
+            return
+
         arg = DrmModeFbDirtyCmdC()
         arg.fb_id = self.id
 
@@ -72,7 +76,13 @@ class DrmFramebuffer(DrmObject):
             arg.clips_ptr = ctypes.cast(ctypes.pointer(clip), ctypes.c_void_p).value
             arg.num_clips = 1
 
-        fcntl.ioctl(self._drm.fd, DRM_IOCTL_MODE_DIRTYFB, arg)
+        try:
+            fcntl.ioctl(self._drm.fd, DRM_IOCTL_MODE_DIRTYFB, arg)
+        except IOError as e:
+            if e.errno == 38: # Function not implemented
+                self.try_flush = False
+            else:
+                raise
 
     @classmethod
     def from_id(cls, drm, id):
