@@ -12,7 +12,7 @@ import argparse
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))) # use pydrm from parent dir
 from pydrm import Drm
-from pydrm.property import DrmPropertyEnum
+from pydrm.property import DrmPropertyEnum, DrmPropertyBitmask
 from pydrm.format import DrmFormat
 from utils import *
 
@@ -394,7 +394,7 @@ test.add_argument('-w', action=SetPropertyAction, help="set property <obj_id>:<p
 
 parser.add_argument("-d", help="drop master after mode set", action="store_true")
 parser.add_argument("-M", help="use the given driver", metavar=('module'))
-parser.add_argument("-D", help="use the given device", metavar=('device'))
+parser.add_argument("-D", help="use the given device", type=int, metavar=('device'))
 
 parser.add_argument("--pattern", help="test pattern (default:smpte)", choices=['smpte', 'mono'], default="smpte")
 
@@ -402,10 +402,8 @@ parser.add_argument("--pattern", help="test pattern (default:smpte)", choices=['
 args = parser.parse_args()
 
 # default dump all
-if len(sys.argv) == 1:
+if not any([args.c, args.e, args.f, args.p, args.w, args.s, args.C, args.v]):
     args.c = args.e = args.f = args.p = True
-
-#print(args)
 
 class Device(object):
     def __init__(self, drm):
@@ -416,7 +414,16 @@ class Device(object):
         self.bo = None
         self.cursor = None
 
-drm = Drm()
+if args.D:
+    drm = Drm(args.D)
+elif args.M:
+    for i in range(64):
+        if os.path.exists("/dev/dri/card%d" % i):
+            drm = Drm(i)
+            if drm.version.name == args.M:
+                break
+else:
+    drm = Drm()
 
 if args.e:
     print(dump_encoders(drm))
