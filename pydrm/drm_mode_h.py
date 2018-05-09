@@ -429,14 +429,15 @@ DRM_MODE_PROP_BITMASK   = (1<<5) # bitmask of enumerated types
 #        DRM_MODE_PROP_ENUM | \
 #        DRM_MODE_PROP_BLOB | \
 #        DRM_MODE_PROP_BITMASK)
-#
-#/* extended-types: rather than continue to consume a bit per type,
-# * grab a chunk of the bits to use as integer type id.
-# */
-##define DRM_MODE_PROP_EXTENDED_TYPE 0x0000ffc0
-##define DRM_MODE_PROP_TYPE(n)       ((n) << 6)
-##define DRM_MODE_PROP_OBJECT        DRM_MODE_PROP_TYPE(1)
-##define DRM_MODE_PROP_SIGNED_RANGE  DRM_MODE_PROP_TYPE(2)
+
+# extended-types: rather than continue to consume a bit per type,
+# grab a chunk of the bits to use as integer type id.
+
+DRM_MODE_PROP_EXTENDED_TYPE = 0x0000ffc0
+def DRM_MODE_PROP_TYPE(n):
+    return ((n) << 6)
+DRM_MODE_PROP_OBJECT        = DRM_MODE_PROP_TYPE(1)
+DRM_MODE_PROP_SIGNED_RANGE  = DRM_MODE_PROP_TYPE(2)
 #
 #/* the PROP_ATOMIC flag is used to hide properties from userspace that
 # * is not aware of atomic properties.  This is mostly to work around

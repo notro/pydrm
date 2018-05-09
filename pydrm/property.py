@@ -5,15 +5,18 @@ from .base import DrmObject
 from .drm_h import DRM_IOCTL_MODE_OBJ_GETPROPERTIES, DRM_IOCTL_MODE_GETPROPERTY, DRM_IOCTL_MODE_OBJ_SETPROPERTY
 from .drm_mode_h import DrmModeObjGetPropertiesC, DrmModeObjGetPropertyC, DrmModePropertyEnumC, DrmModeObjSetPropertyC
 from .drm_mode_h import DRM_MODE_PROP_PENDING, DRM_MODE_PROP_RANGE, DRM_MODE_PROP_IMMUTABLE, DRM_MODE_PROP_ENUM, DRM_MODE_PROP_BLOB, DRM_MODE_PROP_BITMASK
+from .drm_mode_h import DRM_MODE_PROP_EXTENDED_TYPE, DRM_MODE_PROP_OBJECT, DRM_MODE_PROP_SIGNED_RANGE
 
 
 class DrmProperty(DrmObject):
     def __init__(self, drm, id, obj_id, obj_type, arg=None):
         self._drm = drm
         self.id = int(id)
+        self.name = "%d" % id
         self.obj_id = obj_id
         self.obj_type = obj_type
         self._arg = arg
+        self.immutable = True
         self.fetch()
 
     @property
@@ -22,6 +25,8 @@ class DrmProperty(DrmObject):
 
     @value.setter
     def value(self, value):
+        if self.immutable:
+            raise ValueError("Can't set an immutable property: %s" % self.name)
         self.set(self.encode(value))
 
     def decode(self, value):
@@ -58,6 +63,19 @@ class DrmProperty(DrmObject):
         arg.obj_type = self.obj_type
         fcntl.ioctl(self._drm.fd, DRM_IOCTL_MODE_OBJ_SETPROPERTY, arg)
         self._arg = arg
+
+
+class DrmPropertyRange(DrmProperty):
+    def fetch(self):
+        self.type_name = "range"
+        self.name = self._arg.name
+        #raise NotImplementedError
+
+    def get(self):
+        return 0
+
+    def set(self):
+        pass
 
 
 class DrmPropertyEnum(DrmProperty):
@@ -108,6 +126,32 @@ class DrmPropertyBitmask(DrmProperty):
 class DrmPropertyBlob(DrmProperty):
     def fetch(self):
         self.type_name = "blob"
+        self.name = self._arg.name
+        #raise NotImplementedError
+
+    def get(self):
+        return 0
+
+    def set(self):
+        pass
+
+
+class DrmPropertyObject(DrmProperty):
+    def fetch(self):
+        self.type_name = "Object"
+        self.name = self._arg.name
+        #raise NotImplementedError
+
+    def get(self):
+        return 0
+
+    def set(self):
+        pass
+
+
+class DrmPropertySignedRange(DrmProperty):
+    def fetch(self):
+        self.type_name = "SignedRange"
         self.name = self._arg.name
         #raise NotImplementedError
 
@@ -176,11 +220,23 @@ class DrmProperties(DrmObject):
                 elif propc.flags & DRM_MODE_PROP_BITMASK:
                     prop = DrmPropertyBitmask(self._drm, propid, self.id, self.type, propc)
                 else:
-                    raise ValueError("count_enum_blobs: propc.flags=0x%x" % propc.flags)
+                    import sys
+                    sys.stderr.write("Skipping unsupported property: propc.flags=0x%x\n" % propc.flags)
+                    continue
+            elif propc.flags & DRM_MODE_PROP_RANGE:
+                prop = DrmPropertyRange(self._drm, propid, self.id, self.type, propc)
             elif propc.flags & DRM_MODE_PROP_BLOB:
                 prop = DrmPropertyBlob(self._drm, propid, self.id, self.type, propc)
             else:
-                raise ValueError("not count_enum_blobs: propc.flags=0x%x" % propc.flags)
+                flags = propc.flags & DRM_MODE_PROP_EXTENDED_TYPE
+                if flags == DRM_MODE_PROP_OBJECT:
+                    prop = DrmPropertyObject(self._drm, propid, self.id, self.type, propc)
+                elif flags == DRM_MODE_PROP_SIGNED_RANGE:
+                    prop = DrmPropertySignedRange(self._drm, propid, self.id, self.type, propc)
+                else:
+                    import sys
+                    sys.stderr.write("Skipping unsupported property: propc.flags=0x%x\n" % propc.flags)
+                    continue
 
             self.props.append(prop)
 
