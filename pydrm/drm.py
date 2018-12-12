@@ -266,15 +266,15 @@ class SimpleDrm(object):
         self._draw = None
         self._setup(conn, mode, vrefresh, format)
 
-    def _setup(self, conn=None, mode="", vrefresh=0, format=None):
+    def _setup(self, connector=None, mode="", vrefresh=0, format=None):
         from .image import DrmImageFramebuffer
-        if conn is None:
+        if connector is None:
             conns = self.drm.find_connectors()[:1]
         else:
-            if type(conn) == str:
-                conns = [conn for conn in self.drm.connectors if conn.name.lower() in conn.lower()]
+            if type(connector) == str:
+                conns = [conn for conn in self.drm.connectors if conn.name.lower() in connector.lower()]
             else:
-                conns = [conn for conn in self.drm.connectors if conn.id == int(conn)]
+                conns = [conn for conn in self.drm.connectors if conn.id == int(connector)]
         if not conns:
             raise ValueError("could not find a connector")
         self.connector = conns[0]
