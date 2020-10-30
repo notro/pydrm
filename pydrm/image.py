@@ -26,5 +26,5 @@ class DrmImageFramebuffer(DrmFramebuffer):
         # Convert RGBX -> Little Endian XRGB
         b = bytearray(self.image.tobytes())
         b[0::4], b[2::4] = b[2::4], b[0::4]
-        self.bo.map[:] = str(b)
+        self.bo.map[:] = bytes(b)
         super(DrmImageFramebuffer, self).flush(x1, y1, x2, y2)
