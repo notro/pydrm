@@ -4,13 +4,11 @@ pydrm
 pydrm is a pure python [drm](https://dri.freedesktop.org/docs/drm/gpu/drm-uapi.html) library which can present the framebuffer as a [PIL.Image](https://pillow.readthedocs.io/en/latest/reference/Image.html) object.
 
 Obvious shortcomings:
-- Python 3 support is lacking for DrmImageFramebuffer
 - DrmImageFramebuffer only supports XR24
 - Only enum property type implemented
 - Only tested with tinydrm
 - API is not stable
 - No documentation
-- No installation script (setup.py)
 - Still missing a lot to be on par with [libdrm](https://cgit.freedesktop.org/mesa/drm)
 
 The code was made public (too) early since it makes it easy to test some monochrome e-ink panels.
@@ -103,3 +101,7 @@ DrmPlane(26)
 >>>
 
 ```
+
+Alternative projects:
+
+- C++ library with python bindings: https://github.com/tomba/kmsxx
