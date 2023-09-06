@@ -18,7 +18,13 @@ def drm_set_client_cap(fd, capability, value):
     c = DrmSetClientCapC()
     c.capability = capability
     c.value = value
-    fcntl.ioctl(fd, DRM_IOCTL_SET_CLIENT_CAP, c)
+    try:
+        fcntl.ioctl(fd, DRM_IOCTL_SET_CLIENT_CAP, c)
+    except IOError as e:
+        if e.errno == 95:
+            return
+        else:
+            raise
 
 
 class DrmCapabilities(object):
@@ -128,6 +134,8 @@ class Drm(object):
             fcntl.ioctl(fd, DRM_IOCTL_MODE_GETRESOURCES, arg)
         except IOError as e:
             if e.errno == 22: # EINVAL: no DRIVER_MODESET (VGEM)
+                return
+            elif e.errno == 95:
                 return
             else:
                 raise
